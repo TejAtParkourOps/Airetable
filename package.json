@@ -1,0 +1,45 @@
+{
+  "name": "airetable",
+  "version": "1.0.0",
+  "description": "A realtime Airtable data server with an intuitively simple client-side library.",
+  "main": "index.js",
+  "scripts": {
+    "dev-server": "nodemon -r tsconfig-paths/register server_src/index.ts",
+    "serve": "ts-node -r tsconfig-paths/register server_src/index.ts",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "airtable",
+    "data",
+    "database",
+    "realtime",
+    "websocket",
+    "observable",
+    "reactive",
+    "server",
+    "client"
+  ],
+  "author": {
+    "name": "Tej Birring",
+    "email": "tej@parkourops.com"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "nodemon": "^2.0.22",
+    "prettier": "^2.8.8",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.7",
+    "utf-8-validate": "^5.0.10"
+  }
+}
