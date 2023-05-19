@@ -3,20 +3,34 @@ import { CorsOptions } from "cors";
 
 type EnvironmentVariableType = "string" | "integer" | "boolean";
 
-function loadOptionalEnvironmentVariable<
-  TVal extends EnvironmentVariableType,
-  TRet extends TVal extends "string"
-    ? string
-    : TVal extends "integer"
-    ? number
-    : TVal extends "boolean"
-    ? boolean
-    : never
->(key: string, asType: TVal): TRet | undefined {
+function loadOptionalEnvironmentVariable<TVal extends EnvironmentVariableType>(
+  key: string,
+  asType: Extract<EnvironmentVariableType, "string">
+): string;
+function loadOptionalEnvironmentVariable<TVal extends EnvironmentVariableType>(
+  key: string,
+  asType: Extract<EnvironmentVariableType, "integer">
+): number;
+function loadOptionalEnvironmentVariable<TVal extends EnvironmentVariableType>(
+  key: string,
+  asType: Extract<EnvironmentVariableType, "boolean">
+): boolean;
+function loadOptionalEnvironmentVariable(
+  key: string,
+  asType: EnvironmentVariableType
+) {
   const _key = `AIRETABLE_${key}`;
   const val = process.env?.[_key];
   if (!val) return undefined;
-  return val as TRet;
+  switch (asType) {
+    case "integer":
+      return parseInt(val);
+    case "boolean":
+      const _val = val.toLowerCase();
+      return ["true", "yes", "y", "1"].includes(_val) ? true : false;
+    default:
+      return val as string;
+  }
 }
 
 export interface Config {
