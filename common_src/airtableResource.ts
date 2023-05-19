@@ -34,47 +34,47 @@ export type AirtableFieldType =
   | "externalSyncSource";
 
 export type SyncBaseRequest = {
-    baseId: string
-}
+  baseId: string;
+};
 
 export type AField = {
-    id: string,
-    name: string,
-    description: string,
-    type: AirtableFieldType
-}
+  id: string;
+  name: string;
+  description: string;
+  type: AirtableFieldType;
+};
 
 export type ACell = {
-    fieldId: string,
-    fieldName: string,
-    value: any
-}
+  fieldId: string;
+  fieldName: string;
+  value: any;
+};
 
 export type ARecord = {
-    id: string, 
-    createdTime: string,
-    cells: {
-        [fieldId: string] : ACell
-    }
-}
+  id: string;
+  createdTime: string;
+  cells: {
+    [fieldId: string]: ACell;
+  };
+};
 
 export type ATable = {
-    id: string,
-    name: string,
-    description: string,
-    fields: {
-        [id: string] : AField
-    }
-    primaryField: AField
-    records: {
-        [id: string] : ARecord
-    }
-}
+  id: string;
+  name: string;
+  description: string;
+  fields: {
+    [id: string]: AField;
+  };
+  primaryField: AField;
+  records: {
+    [id: string]: ARecord;
+  };
+};
 
 export type ABase = {
-    id: string,
-    name: string,
-    tables: {
-        [id: string] : ATable
-    }
-}
+  id: string;
+  name: string;
+  tables: {
+    [id: string]: ATable;
+  };
+};

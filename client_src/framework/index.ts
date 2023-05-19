@@ -2,11 +2,13 @@ import { io, Socket } from "socket.io-client";
 import { Response } from "@common/response";
 
 interface Options {
-    authToken?: string | (() => string) | undefined | null
+  authToken?: string | (() => string) | undefined | null;
 }
 
 export const errors = {
-  "not-connected": Error("The socket is not connected. Please call connect() function first.")
+  "not-connected": Error(
+    "The socket is not connected. Please call connect() function first."
+  ),
 } as const;
 
 export class ClientSideSocket {
@@ -31,37 +33,40 @@ export class ClientSideSocket {
     });
   }
   async connect() {
-    return new Promise<void>((resolve)=>{
+    return new Promise<void>((resolve) => {
       this.#client.connect();
-      const n = setInterval(()=>{
+      const n = setInterval(() => {
         if (!this.#client.connected) {
           console.debug("Connecting to server...");
         } else {
           clearInterval(n);
           resolve();
-        }  
+        }
       }, 1000);
     });
   }
   disconnect() {
-    return new Promise<void>((resolve)=>{
+    return new Promise<void>((resolve) => {
       this.#client.disconnect();
-      const n = setInterval(()=>{
+      const n = setInterval(() => {
         if (!this.#client.disconnected) {
           console.debug("Disconnecting from server...");
         } else {
           clearInterval(n);
           resolve();
-        }  
+        }
       }, 1000);
     });
   }
   #assertConnection() {
-      if (!this.#client.connected) {
-        throw errors["not-connected"];
-      } 
+    if (!this.#client.connected) {
+      throw errors["not-connected"];
+    }
   }
-  sendRequest<TRequest, TResponseData>(route: string, data: TRequest): Promise<TResponseData> {
+  sendRequest<TRequest, TResponseData>(
+    route: string,
+    data: TRequest
+  ): Promise<TResponseData> {
     this.#assertConnection();
     return new Promise(async (resolve, reject) => {
       // this.#assertConnection();
@@ -79,9 +84,9 @@ export class ClientSideSocket {
       this.#client.emit(route, ...args);
     });
   }
-//   subscribeToEvent(eventPath: string, callback: (...args: Array<any>) => void) {
-//     this.#client.on(eventPath, (...args: Array<any>) => {
-//       callback(...args);
-//     });
-//   }
+  //   subscribeToEvent(eventPath: string, callback: (...args: Array<any>) => void) {
+  //     this.#client.on(eventPath, (...args: Array<any>) => {
+  //       callback(...args);
+  //     });
+  //   }
 }

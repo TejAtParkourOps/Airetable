@@ -95,9 +95,10 @@ export function makeSuccessResponse<R extends HttpSuccessResponseType, TData>(
     statusText: httpSuccessResponses[code]["text"],
     developerFriendlyMessage: devMsg,
     userFriendlyMessage: userMsg,
-    data
+    data,
   };
 }
 
-
-export type Response<TResponseData> = SuccessResponse<HttpSuccessResponseType, TResponseData> | ErrorResponse<HttpErrorResponseType>;
+export type Response<TResponseData> =
+  | SuccessResponse<HttpSuccessResponseType, TResponseData>
+  | ErrorResponse<HttpErrorResponseType>;

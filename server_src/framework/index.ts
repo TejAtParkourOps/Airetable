@@ -6,7 +6,9 @@ import { loadConfig, getSocketIoConfig } from "./config";
 import { initializeRestApiServer } from "./rest";
 import { initializeSocketIoApiServer } from "./socket";
 import { SocketIoRoute } from "./socket/types";
-export type SocketIoRoutes<TReq = unknown, TRes = unknown> = Array<SocketIoRoute<TReq, TRes>>;
+export type SocketIoRoutes<TReq = unknown, TRes = unknown> = Array<
+  SocketIoRoute<TReq, TRes>
+>;
 
 export function startServer(socketIoRoutes: SocketIoRoutes) {
   console.info("Server is running.");
@@ -52,4 +54,3 @@ export function startServer(socketIoRoutes: SocketIoRoutes) {
     console.info(`Server listening on: ${JSON.stringify(server.address())}`);
   });
 }
-

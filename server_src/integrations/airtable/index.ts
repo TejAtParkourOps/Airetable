@@ -82,7 +82,10 @@ export const getListOfBases = <TAuthTkn extends string>(
     }
   );
 
-export const getListOfTablesInBase = <TAuthTkn extends string, TBaseId extends string>(
+export const getListOfTablesInBase = <
+  TAuthTkn extends string,
+  TBaseId extends string
+>(
   authToken: NonEmptyString<TAuthTkn>,
   baseId: NonEmptyString<TBaseId>
 ) =>
@@ -107,7 +110,7 @@ export const getListOfRecordsInTable = <
       accumulatingResult.records.push(...newResult.records);
     },
     {
-      returnFieldsByFieldId: "true"
+      returnFieldsByFieldId: "true",
     }
   );
 
