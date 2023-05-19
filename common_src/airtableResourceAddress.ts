@@ -1,5 +1,5 @@
 import { NonEmptyString, Union2Tuple } from "./generics";
-import { makeBadRequestResponse, makeErrorResponse } from "./response";
+import { makeErrorResponse } from "./response";
 
 export type AirtableResourceType = "base" | "table" | "record";
 
