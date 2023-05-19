@@ -5,8 +5,10 @@ import { createServer } from "node:http";
 import { loadConfig, getSocketIoConfig } from "./config";
 import { initializeRestApiServer } from "./rest";
 import { initializeSocketIoApiServer } from "./socket";
+import { SocketIoRoute } from "./socket/types";
+export type SocketIoRoutes<TReq = unknown, TRes = unknown> = Array<SocketIoRoute<TReq, TRes>>;
 
-export function startServer() {
+export function startServer(socketIoRoutes: SocketIoRoutes) {
   console.info("Server is running.");
 
   // called when `process.exit(...)` called or no additional work to perform.
@@ -43,10 +45,11 @@ export function startServer() {
 
   // initialize API servers
   initializeRestApiServer(restApiServer);
-  initializeSocketIoApiServer(socketIoApiServer);
+  initializeSocketIoApiServer(socketIoApiServer, socketIoRoutes);
 
   // start serving
   server.listen(config.port, config.host, () => {
     console.info(`Server listening on: ${JSON.stringify(server.address())}`);
   });
 }
+

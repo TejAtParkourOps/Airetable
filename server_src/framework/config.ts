@@ -44,7 +44,7 @@ export function loadConfig(): Config {
     host: loadOptionalEnvironmentVariable("HOST", "string") ?? "0.0.0.0",
     port: loadOptionalEnvironmentVariable("PORT", "integer") ?? 3434,
     cors: {
-      origin: loadOptionalEnvironmentVariable("CORS_ORIGIN", "string"),
+      origin: loadOptionalEnvironmentVariable("CORS_ORIGIN", "string") ?? "*"
     },
   };
   console.debug("Loaded config:", c);

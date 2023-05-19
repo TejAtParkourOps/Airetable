@@ -1,3 +1,5 @@
+import { AxiosError } from "axios";
+
 const httpSuccessResponses = {
   200: {
     isSuccess: true,
@@ -34,13 +36,17 @@ const httpErrorResponses = {
     isSuccess: false,
     text: "Not Implemented",
   },
+  503: {
+    isSuccess: false,
+    text: "Service Unavailable",
+  },
 };
 
 type HttpSuccessResponseSpec = typeof httpSuccessResponses;
-type HttpSuccessResponseType = keyof HttpSuccessResponseSpec;
+export type HttpSuccessResponseType = keyof HttpSuccessResponseSpec;
 
 type HttpErrorResponseSpec = typeof httpErrorResponses;
-type HttpErrorResponseType = keyof HttpErrorResponseSpec;
+export type HttpErrorResponseType = keyof HttpErrorResponseSpec;
 
 // type HttpResponseSpec = HttpSuccessResponseSpec & HttpErrorResponseSpec;
 // type HttpResponseType = HttpSuccessResponseType | HttpErrorResponseType;
@@ -76,3 +82,22 @@ export function makeErrorResponse<R extends HttpErrorResponseType>(
     userFriendlyMessage: userMsg,
   };
 }
+
+export function makeSuccessResponse<R extends HttpSuccessResponseType, TData>(
+  data: TData,
+  code: R,
+  userMsg: string,
+  devMsg?: string
+): SuccessResponse<R, TData> {
+  return {
+    isSuccess: true,
+    statusCode: code,
+    statusText: httpSuccessResponses[code]["text"],
+    developerFriendlyMessage: devMsg,
+    userFriendlyMessage: userMsg,
+    data
+  };
+}
+
+
+export type Response<TResponseData> = SuccessResponse<HttpSuccessResponseType, TResponseData> | ErrorResponse<HttpErrorResponseType>;

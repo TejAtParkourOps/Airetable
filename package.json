@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev-server": "nodemon -r tsconfig-paths/register server_src/index.ts",
+    "dev-client": "nodemon -r tsconfig-paths/register client_src/index.ts",
     "serve": "ts-node -r tsconfig-paths/register server_src/index.ts",
     "format": "prettier --write ."
   },
@@ -36,7 +37,8 @@
     "axios": "^1.4.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "socket.io": "^4.6.1"
+    "socket.io": "^4.6.1",
+    "socket.io-client": "^4.6.1"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.7",

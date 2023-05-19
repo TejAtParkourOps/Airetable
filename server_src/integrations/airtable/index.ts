@@ -18,18 +18,13 @@ async function makeAirtableRequest<TResult>(
 ): Promise<TResult> {
   assert(authToken.length > 0);
   assert(request.length > 0);
-  try {
-    const response = await axios.get(request, {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-      params,
-    });
-    return response.data as TResult;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
+  const response = await axios.get(request, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+    params,
+  });
+  return response.data as TResult;
 }
 
 type UnpaginatingCallback<TResult> = (
@@ -46,42 +41,37 @@ async function makeUnpaginatingAirtableRequest<
 ): Promise<TResult> {
   assert(authToken.length > 0);
   assert(request.length > 0);
-  try {
-    let noMore = false;
-    let queryParams: QueryParams = params ?? {};
-    let accumulation: TResult | null = null;
-    let nIterations = 0;
-    while (noMore !== true) {
-      nIterations++;
+  let noMore = false;
+  let queryParams: QueryParams = params ?? {};
+  let accumulation: TResult | null = null;
+  let nIterations = 0;
+  while (noMore !== true) {
+    nIterations++;
 
-      const response: TResult = await makeAirtableRequest(
-        authToken,
-        request,
-        queryParams
-      );
-      if (nIterations === 1) {
-        accumulation = response;
-      } else {
-        assert(accumulation);
-        unpaginationCallback(response, accumulation);
-      }
-
-      if (response?.offset) {
-        queryParams.offset = response.offset;
-      } else {
-        noMore = true;
-      }
+    const response: TResult = await makeAirtableRequest(
+      authToken,
+      request,
+      queryParams
+    );
+    if (nIterations === 1) {
+      accumulation = response;
+    } else {
+      assert(accumulation);
+      unpaginationCallback(response, accumulation);
     }
-    assert(accumulation);
-    delete accumulation.offset;
-    return accumulation;
-  } catch (err) {
-    console.error(err);
-    throw err;
+
+    if (response?.offset) {
+      queryParams.offset = response.offset;
+    } else {
+      noMore = true;
+    }
   }
+  assert(accumulation);
+  delete accumulation.offset;
+  return accumulation;
 }
 
-const getListOfBases = <TAuthTkn extends string>(
+export const getListOfBases = <TAuthTkn extends string>(
   authToken: NonEmptyString<TAuthTkn>
 ) =>
   makeUnpaginatingAirtableRequest<ListOfBases>(
@@ -92,7 +82,7 @@ const getListOfBases = <TAuthTkn extends string>(
     }
   );
 
-const getListOfTablesInBase = <TAuthTkn extends string, TBaseId extends string>(
+export const getListOfTablesInBase = <TAuthTkn extends string, TBaseId extends string>(
   authToken: NonEmptyString<TAuthTkn>,
   baseId: NonEmptyString<TBaseId>
 ) =>
@@ -101,7 +91,7 @@ const getListOfTablesInBase = <TAuthTkn extends string, TBaseId extends string>(
     `https://api.airtable.com/v0/meta/bases/${baseId}/tables`
   );
 
-const getListOfRecordsInTable = <
+export const getListOfRecordsInTable = <
   TAuthTkn extends string,
   TBaseId extends string,
   TTableId extends string
@@ -115,18 +105,21 @@ const getListOfRecordsInTable = <
     `https://api.airtable.com/v0/${baseId}/${tableId}`,
     (newResult, accumulatingResult) => {
       accumulatingResult.records.push(...newResult.records);
+    },
+    {
+      returnFieldsByFieldId: "true"
     }
   );
 
-(async () => {
-  const authTkn =
-    "patvVIhW6YcAMw0cE.68a8a732bc788a931157e9e257bd72513628b94048e9572bc523ad12a91c50f0";
-  const n = await getListOfBases(authTkn);
-  const m = await getListOfTablesInBase(authTkn, n.bases[0].id);
-  const o = await getListOfRecordsInTable(
-    authTkn,
-    n.bases[0].id,
-    m.tables[0].id
-  );
-  console.log(o.records);
-})();
+// (async () => {
+//   const authTkn =
+//     "patvVIhW6YcAMw0cE.68a8a732bc788a931157e9e257bd72513628b94048e9572bc523ad12a91c50f0";
+//   const n = await getListOfBases(authTkn);
+//   const m = await getListOfTablesInBase(authTkn, n.bases[0].id);
+//   const o = await getListOfRecordsInTable(
+//     authTkn,
+//     n.bases[0].id,
+//     m.tables[0].id
+//   );
+//   console.log(o.records);
+// })();
