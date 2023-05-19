@@ -138,4 +138,4 @@ const fetchBase: SocketIoRouteHandler<
   }
 };
 
-export default [["sync-base-req", fetchBase]] as SocketIoRoutes;
+export default [["start-sync-base", fetchBase]] as SocketIoRoutes;

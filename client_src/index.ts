@@ -21,7 +21,7 @@ export class AireTableClient {
     this.#base = await this.#client.sendRequest<
       { authToken: string; baseId: string },
       ABase
-    >("sync-base-req", {
+    >("start-sync-base", {
       authToken: this.#authToken,
       baseId: airtableBaseId,
     });
