@@ -4,9 +4,9 @@
   "description": "A realtime Airtable data server with an intuitively simple client-side library.",
   "main": "index.js",
   "scripts": {
-    "dev-server": "nodemon -r tsconfig-paths/register server_src/index.ts",
-    "dev-client": "nodemon -r tsconfig-paths/register client_src/index.ts",
-    "serve": "ts-node -r tsconfig-paths/register server_src/index.ts",
+    "dev-server": "nodemon -r dotenv/config -r tsconfig-paths/register server_src/index.ts",
+    "dev-client": "nodemon -r dotenv/config -r tsconfig-paths/register client_src/index.ts",
+    "serve": "ts-node -r dotenv/config -r tsconfig-paths/register server_src/index.ts",
     "format": "prettier --write ."
   },
   "keywords": [
@@ -36,7 +36,10 @@
   "dependencies": {
     "axios": "^1.4.0",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "redis": "^4.6.6",
     "socket.io": "^4.6.1",
     "socket.io-client": "^4.6.1"
   },

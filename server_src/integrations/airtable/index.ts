@@ -6,10 +6,66 @@ import {
   ListOfBases,
   ListOfRecordsInTable,
   ListOfTablesInBase,
-} from "./responseTypes";
+} from "./dataResponseTypes";
 import assert from "node:assert";
+import { CreateWebhookResponse, ListOfWebhooks } from "./webhookResponseTypes";
 
 type QueryParams = Record<string, string | number>;
+
+/**
+ * {@link https://airtable.com/developers/web/api/create-a-webhook | Create a webhook }
+ *
+ * @export
+ * @template TAuthTkn
+ * @template TBaseId
+ * @param {NonEmptyString<TAuthTkn>} authToken
+ * @param {NonEmptyString<TBaseId>} baseId
+ * @param {string} notificationUrl
+ * @return {*} 
+ */
+export async function createWebhookForBase<TAuthTkn extends string, TBaseId extends string>(authToken:NonEmptyString<TAuthTkn>, baseId: NonEmptyString<TBaseId>, notificationUrl?: string) {
+  assert(authToken.length > 0);
+  assert(baseId.length > 0);
+  const response = await axios.post(
+    `https://api.airtable.com/v0/bases/${baseId}/webhooks`, 
+    {
+      notificationUrl: notificationUrl,
+      specification: {
+        options: {
+          filters: {
+            dataTypes: [
+              "tableData",    // i.e. record and cell value changes,
+              "tableFields",  // i.e. changes to fields
+              "tableMetadata" // i.e. table name and description changes
+            ]
+          }
+        }
+      }
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+  return response.data as CreateWebhookResponse;
+}
+
+export async function deleteWebhook<TAuthTkn extends string, TBaseId extends string, TWebhookId extends string>(authToken:NonEmptyString<TAuthTkn>, baseId: NonEmptyString<TBaseId>, webhookId: NonEmptyString<TWebhookId>) {
+  assert(baseId.length > 0);
+  assert(webhookId.length > 0);
+  const response = await axios.delete(
+    `https://api.airtable.com/v0/bases/${baseId}/webhooks/${webhookId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+  // there is no return, only success code
+}
 
 async function makeAirtableRequest<TResult>(
   authToken: string,
@@ -114,15 +170,10 @@ export const getListOfRecordsInTable = <
     }
   );
 
-// (async () => {
-//   const authTkn =
-//     "patvVIhW6YcAMw0cE.68a8a732bc788a931157e9e257bd72513628b94048e9572bc523ad12a91c50f0";
-//   const n = await getListOfBases(authTkn);
-//   const m = await getListOfTablesInBase(authTkn, n.bases[0].id);
-//   const o = await getListOfRecordsInTable(
-//     authTkn,
-//     n.bases[0].id,
-//     m.tables[0].id
-//   );
-//   console.log(o.records);
-// })();
+export const getListOfWebhook = <TAuthTkn extends string, TBaseId extends string>(authToken: NonEmptyString<TAuthTkn>, baseId: NonEmptyString<TBaseId>) =>
+  makeAirtableRequest<ListOfWebhooks>(authToken, `https://api.airtable.com/v0/bases/${baseId}/webhooks`, {});
+
+export const refreshWebhook = 
+  <TAuthTkn extends string, TBaseId extends string, TWebhookId extends string>
+  (authToken: NonEmptyString<TAuthTkn>, baseId: NonEmptyString<TBaseId>, webhookId: NonEmptyString<TWebhookId>) => 
+  makeAirtableRequest(authToken, `https://api.airtable.com/v0/bases/${baseId}/webhooks/${webhookId}/refresh`, {});

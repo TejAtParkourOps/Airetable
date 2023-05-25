@@ -1,16 +1,20 @@
 import { makeErrorResponse, makeSuccessResponse } from "@common/response";
 import { SocketIoRoutes } from "./framework";
-import { SocketIoRouteHandler } from "./framework/socket/types";
+import { SocketIoRouteHandler } from "./framework/types";
 import {
+  createWebhookForBase,
+  deleteWebhook,
   getListOfBases,
   getListOfRecordsInTable,
   getListOfTablesInBase,
+  getListOfWebhook,
+  refreshWebhook,
 } from "./integrations/airtable";
 import {
   AirtableField,
   AirtableRecord,
   AirtableTable,
-} from "./integrations/airtable/responseTypes";
+} from "./integrations/airtable/dataResponseTypes";
 import {
   ABase,
   AField,
@@ -19,6 +23,33 @@ import {
   ACell,
 } from "@common/airtableResource";
 import { AxiosError } from "axios";
+import config from "./framework/config";
+import { CreateWebhookResponse, WebhookInfo } from "./integrations/airtable/webhookResponseTypes";
+import redis from "@server/framework/redis";
+import webhookEntry, { WebhookEntry } from "./integrations/webhookEntry";
+
+const notificationUrl = `${config.mainConfig.publicAddress}/rcv-airtable-webhook-notification`;
+
+async function createWebhook(authToken: string, baseId: string) : Promise<WebhookEntry> {
+  const webhookResponse = await createWebhookForBase(authToken, baseId, notificationUrl);
+  return webhookEntry.create(
+    authToken, 
+    baseId, 
+    webhookResponse.id,
+    webhookResponse.macSecretBase64, 
+    webhookResponse.expirationTime ? Date.parse(webhookResponse.expirationTime) : Date.now()
+  );
+}
+
+async function subscribeToWebhookOrCreate(authToken: string, baseId: string) : Promise<WebhookEntry> {
+  const existingWebhookEntry = await webhookEntry.find(baseId);
+  if (existingWebhookEntry) {
+    await refreshWebhook(authToken, baseId, existingWebhookEntry.webhookId);
+    return existingWebhookEntry;
+  } else {
+    return (await createWebhook(authToken, baseId));
+  }
+}
 
 const processFields = (rawTable: AirtableTable): Record<string, AField> => {
   const result: Record<string, AField> = {};
@@ -100,10 +131,13 @@ const fetchBase: SocketIoRouteHandler<
       name: _base.name,
       tables: tables,
     };
+    // subscribe to webhook
+    await subscribeToWebhookOrCreate(data.authToken, data.baseId);
+    // return result
     cb(makeSuccessResponse(base, 200, "Airtable Base found!"));
     return base;
   } catch (err) {
-    console.error(err);
+    console.error(JSON.stringify(err));
     // handle errors from Axios
     if (err instanceof AxiosError) {
       switch (err.response?.status) {
@@ -111,7 +145,7 @@ const fetchBase: SocketIoRouteHandler<
           return cb(
             makeErrorResponse(
               500,
-              "Something went wrong while trying to fetch Airtable Base."
+              "Something went wrong while trying to sync Airtable Base."
             )
           );
         case 401:
@@ -132,7 +166,7 @@ const fetchBase: SocketIoRouteHandler<
     cb(
       makeErrorResponse(
         500,
-        "Something went wrong while trying to fetch Airtable Base."
+        "Something went wrong while trying to sync Airtable Base."
       )
     );
   }

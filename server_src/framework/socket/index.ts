@@ -1,10 +1,10 @@
 import { SuccessResponse, ErrorResponse } from "@common/response";
 import { Server, Socket } from "socket.io";
-import { SocketIoRoute } from "./types";
+import { SocketIoRoute, SocketIoRoutes } from "../types";
 
 export function initializeSocketIoApiServer(
   server: Server,
-  routes: Array<SocketIoRoute<unknown, unknown>>
+  routes: SocketIoRoutes
 ) {
   server.on("connection", (socket) => {
     // handle generic errors...

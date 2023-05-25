@@ -1,1 +1,5 @@
+.readme
 node_modules/
+*.env
+*.log
+tlscerts/

@@ -1,61 +1,39 @@
 import { ServerOptions as SocketIoServerOptions } from "socket.io";
 import { CorsOptions } from "cors";
+import { loadOptionalEnvironmentVariable } from "./utils";
+import appConfig from "@server/appConfig";
 
-type EnvironmentVariableType = "string" | "integer" | "boolean";
+type FrameworkConfig = {
+  readonly host: string
+  readonly port: number
+  readonly publicAddress: string,
+  readonly useTLS: boolean
+  readonly cors: CorsOptions
+}
 
-function loadOptionalEnvironmentVariable<TVal extends EnvironmentVariableType>(
-  key: string,
-  asType: Extract<EnvironmentVariableType, "string">
-): string;
-function loadOptionalEnvironmentVariable<TVal extends EnvironmentVariableType>(
-  key: string,
-  asType: Extract<EnvironmentVariableType, "integer">
-): number;
-function loadOptionalEnvironmentVariable<TVal extends EnvironmentVariableType>(
-  key: string,
-  asType: Extract<EnvironmentVariableType, "boolean">
-): boolean;
-function loadOptionalEnvironmentVariable(
-  key: string,
-  asType: EnvironmentVariableType
-) {
-  const _key = `AIRETABLE_${key}`;
-  const val = process.env?.[_key];
-  if (!val) return undefined;
-  switch (asType) {
-    case "integer":
-      return parseInt(val);
-    case "boolean":
-      const _val = val.toLowerCase();
-      return ["true", "yes", "y", "1"].includes(_val) ? true : false;
-    default:
-      return val as string;
+class ConfigManager<TAppConfig> {
+  readonly #c: FrameworkConfig & {app:TAppConfig}
+  constructor(appConfig: TAppConfig) {
+    this.#c = {
+      host: loadOptionalEnvironmentVariable("HOST", "string") ?? "0.0.0.0",
+      port: loadOptionalEnvironmentVariable("PORT", "integer") ?? 3434,
+      publicAddress: loadOptionalEnvironmentVariable("PUBLIC_ADDRESS", "string") ?? "0.0.0.0:3434",
+      useTLS: loadOptionalEnvironmentVariable("USE_TLS", "boolean") ?? false,
+      cors: {
+        origin: loadOptionalEnvironmentVariable("CORS_ORIGIN", "string") ?? "*",
+      },
+      app: appConfig
+    }
+  }
+  get mainConfig() {
+    return this.#c;
+  } 
+  get socketIoConfig() : Partial<SocketIoServerOptions> {
+    return {
+      cors: this.#c.cors,
+      cookie: true,
+    }  
   }
 }
 
-export interface Config {
-  host: string;
-  port: number;
-  cors: CorsOptions;
-}
-
-export function loadConfig(): Config {
-  const c = {
-    host: loadOptionalEnvironmentVariable("HOST", "string") ?? "0.0.0.0",
-    port: loadOptionalEnvironmentVariable("PORT", "integer") ?? 3434,
-    cors: {
-      origin: loadOptionalEnvironmentVariable("CORS_ORIGIN", "string") ?? "*",
-    },
-  };
-  console.debug("Loaded config:", c);
-  return c;
-}
-
-export function getSocketIoConfig(
-  config: Config
-): Partial<SocketIoServerOptions> {
-  return {
-    cors: config.cors,
-    cookie: true,
-  };
-}
+export default new ConfigManager(appConfig);
